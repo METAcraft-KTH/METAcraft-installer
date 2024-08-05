@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.fabricmc.installer.client.ClientHandler;
-import net.fabricmc.installer.server.ServerHandler;
 import net.fabricmc.installer.util.ArgumentParser;
 import net.fabricmc.installer.util.CrashDialog;
 import net.fabricmc.installer.util.FabricService;

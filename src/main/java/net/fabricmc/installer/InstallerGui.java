@@ -26,7 +26,15 @@ import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.WindowConstants;
 import javax.xml.stream.XMLStreamException;
 
 import net.fabricmc.installer.util.Utils;
@@ -104,6 +112,7 @@ public class InstallerGui extends JFrame {
 		if (Main.HANDLERS.size() != 1) {
 			throw new RuntimeException("Expected the METAcraft installer to have one handler only.");
 		}
+
 		Handler handler = Main.HANDLERS.get(0);
 		contentPane.add(handler.makePanel(this));
 	}

@@ -23,16 +23,10 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.xml.stream.XMLStreamException;
 
 import net.fabricmc.installer.util.Utils;
@@ -41,14 +35,16 @@ import net.fabricmc.installer.util.Utils;
 public class InstallerGui extends JFrame {
 	public static InstallerGui instance;
 
-	private JTabbedPane contentPane;
+	private Image iconImage;
+	private JPanel contentPane;
 
 	public InstallerGui() throws IOException {
+		iconImage = Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemClassLoader().getResource("icon.png"));
+
 		initComponents();
 		setContentPane(contentPane);
 
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		Image iconImage = Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemClassLoader().getResource("icon.png"));
 		setIconImage(iconImage);
 		setTaskBarImage(iconImage);
 
@@ -96,8 +92,20 @@ public class InstallerGui extends JFrame {
 	}
 
 	private void initComponents() {
-		contentPane = new JTabbedPane(JTabbedPane.TOP);
-		Main.HANDLERS.forEach(handler -> contentPane.addTab(Utils.BUNDLE.getString("tab." + handler.name().toLowerCase(Locale.ROOT)), handler.makePanel(this)));
+		contentPane = new JPanel();
+		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
+
+		JPanel iconPanel = new JPanel();
+		iconPanel.setLayout(new BoxLayout(iconPanel, BoxLayout.X_AXIS));
+		Image scaledIcon = iconImage.getScaledInstance(128, 128, Image.SCALE_DEFAULT);
+		iconPanel.add(new JLabel(new ImageIcon(scaledIcon), JLabel.CENTER));
+		contentPane.add(iconPanel);
+
+		if (Main.HANDLERS.size() != 1) {
+			throw new RuntimeException("Expected the METAcraft installer to have one handler only.");
+		}
+		Handler handler = Main.HANDLERS.get(0);
+		contentPane.add(handler.makePanel(this));
 	}
 
 	private static void setTaskBarImage(Image image) {

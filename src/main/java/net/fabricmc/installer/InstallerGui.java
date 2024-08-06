@@ -64,7 +64,7 @@ public class InstallerGui extends JFrame {
 	public static void selectInstallLocation(Supplier<String> initalDir, Consumer<String> selectedDir) {
 		JFileChooser chooser = new JFileChooser();
 		chooser.setCurrentDirectory(new File(initalDir.get()));
-		chooser.setDialogTitle(Utils.BUNDLE.getString("prompt.select.location"));
+		chooser.setDialogTitle(Utils.BUNDLE.getString("prompt.select.location.launcher"));
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
 

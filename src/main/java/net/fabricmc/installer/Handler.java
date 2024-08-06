@@ -58,13 +58,9 @@ public abstract class Handler implements InstallerProgress {
 
 	public JButton buttonInstall;
 
-	public JComboBox<String> gameVersionComboBox;
-	private JComboBox<String> loaderVersionComboBox;
 	public JTextField installLocation;
 	public JButton selectFolderButton;
 	public JLabel statusLabel;
-
-	public JCheckBox snapshotCheckBox;
 
 	private JPanel pane;
 
@@ -91,25 +87,11 @@ public abstract class Handler implements InstallerProgress {
 
 		setupPane1(pane, c, installerGui);
 
-		addRow(pane, c, "prompt.game.version",
-				gameVersionComboBox = new JComboBox<>(),
-				createSpacer(),
-				snapshotCheckBox = new JCheckBox(Utils.BUNDLE.getString("option.show.snapshots")));
-		snapshotCheckBox.setSelected(false);
-		snapshotCheckBox.addActionListener(e -> {
-			if (Main.GAME_VERSION_META.isComplete()) {
-				updateGameVersions();
-			}
-		});
+		addRow(pane, c, "prompt.game.version", new JLabel(Utils.BUNDLE.getString("installer.version.minecraft")));
 
-		Main.GAME_VERSION_META.onComplete(versions -> {
-			updateGameVersions();
-		});
+		addRow(pane, c, "prompt.loader.version", new JLabel(Utils.BUNDLE.getString("installer.version.fabricloader")));
 
-		addRow(pane, c, "prompt.loader.version",
-				loaderVersionComboBox = new JComboBox<>());
-
-		addRow(pane, c, "prompt.select.location",
+		addRow(pane, c, "prompt.select.location.launcher",
 				installLocation = new JTextField(20),
 				selectFolderButton = new JButton());
 		selectFolderButton.setText("...");
@@ -130,49 +112,14 @@ public abstract class Handler implements InstallerProgress {
 		});
 
 		Main.LOADER_META.onComplete(versions -> {
-			int stableIndex = -1;
-
-			for (int i = 0; i < versions.size(); i++) {
-				MetaHandler.GameVersion version = versions.get(i);
-				loaderVersionComboBox.addItem(version.getVersion());
-
-				if (version.isStable()) {
-					stableIndex = i;
-				}
-			}
-
-			loaderVersionComboBox.addItem(SELECT_CUSTOM_ITEM);
-
-			//If no stable versions are found, default to the latest version
-			if (stableIndex == -1) {
-				stableIndex = 0;
-			}
-
-			loaderVersionComboBox.setSelectedIndex(stableIndex);
 			statusLabel.setText(Utils.BUNDLE.getString("prompt.ready.install"));
 		});
 
 		return pane;
 	}
 
-	private void updateGameVersions() {
-		gameVersionComboBox.removeAllItems();
-
-		for (MetaHandler.GameVersion version : Main.GAME_VERSION_META.getVersions()) {
-			if (!snapshotCheckBox.isSelected() && !version.isStable()) {
-				continue;
-			}
-
-			gameVersionComboBox.addItem(version.getVersion());
-		}
-
-		gameVersionComboBox.setSelectedIndex(0);
-
-		InstallerGui.instance.updateSize(false);
-	}
-
 	protected LoaderVersion queryLoaderVersion() {
-		String ret = (String) loaderVersionComboBox.getSelectedItem();
+		String ret = Utils.BUNDLE.getString("installer.version.fabricloader");
 
 		if (!ret.equals(SELECT_CUSTOM_ITEM)) {
 			return new LoaderVersion(ret);

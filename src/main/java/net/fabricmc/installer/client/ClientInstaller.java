@@ -35,7 +35,7 @@ public class ClientInstaller {
 	public static String install(Path mcDir, String gameVersion, LoaderVersion loaderVersion, InstallerProgress progress) throws IOException {
 		System.out.println("Installing " + gameVersion + " with fabric " + loaderVersion.name);
 
-		String profileName = String.format("%s-%s-%s", Reference.LOADER_NAME, loaderVersion.name, gameVersion);
+		String profileName = String.format("%s-%s-%s", Reference.INSTALLER_NAME, loaderVersion.name, gameVersion);
 
 		Path versionsDir = mcDir.resolve("versions");
 		Path profileDir = versionsDir.resolve(profileName);

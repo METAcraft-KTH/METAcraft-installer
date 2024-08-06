@@ -43,7 +43,7 @@ public class ProfileInstaller {
 				.collect(Collectors.toList());
 	}
 
-	public void setupProfile(String name, String gameVersion, LauncherType launcherType) throws IOException {
+	public void setupProfile(String name, String gameVersion, LauncherType launcherType, Path profileGameDir) throws IOException {
 		Path launcherProfiles = mcDir.resolve(launcherType.profileJsonName);
 
 		if (!Files.exists(launcherProfiles)) {
@@ -61,7 +61,7 @@ public class ProfileInstaller {
 			jsonObject.set("profiles", profiles);
 		}
 
-		String profileName = Reference.LOADER_NAME + "-" + gameVersion;
+		String profileName = Reference.INSTALLER_NAME + "-" + gameVersion;
 
 		Json profile = profiles.at(profileName);
 
@@ -70,16 +70,28 @@ public class ProfileInstaller {
 			profiles.set(profileName, profile);
 		}
 
+		profile.set("gameDir", profileGameDir.toString());
 		profile.set("lastVersionId", name);
 
 		Utils.writeToFile(launcherProfiles, jsonObject.toString());
 
 		// Create the mods directory
-		Path modsDir = mcDir.resolve("mods");
+		Path modsDir = profileGameDir.resolve("mods");
 
 		if (Files.notExists(modsDir)) {
 			Files.createDirectories(modsDir);
 		}
+
+		// Remove old mods if they exist
+		Utils.removeMods(
+				modsDir,
+				Utils.BUNDLE.getString("mods.simplevoicechat.modid"),
+				Utils.BUNDLE.getString("mods.sodium.modid")
+		);
+
+		// Download mods
+		Utils.downloadMod(modsDir, "simplevoicechat");
+		Utils.downloadMod(modsDir, "sodium");
 	}
 
 	private static Json createProfile(String name) {

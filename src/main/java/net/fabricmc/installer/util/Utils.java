@@ -16,12 +16,18 @@
 
 package net.fabricmc.installer.util;
 
+import mjson.Json;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,11 +38,15 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class Utils {
 	public static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -86,6 +96,11 @@ public class Utils {
 		return dir.toAbsolutePath().normalize();
 	}
 
+	public static Path findDefaultProfileInstallDir() {
+		Path minecraftDir = findDefaultInstallDir();
+		return minecraftDir.getParent().resolve(minecraftDir.getFileName() + "_metacraft");
+	}
+
 	public static String readString(URL url) throws IOException {
 		try (InputStream is = openUrl(url)) {
 			return readString(is);
@@ -132,6 +147,69 @@ public class Utils {
 			}
 
 			throw t;
+		}
+	}
+
+	public static void downloadFileRetry(URL url, Path path) throws IOException {
+		int i = 0;
+		while (true) {
+			try {
+				downloadFile(url, path);
+				return;
+			} catch (Throwable t) {
+				i++;
+				if (i > 3) {
+					throw t;
+				}
+			}
+		}
+	}
+
+	public static void downloadMod(Path modsDir, String modInstallerId) throws IOException {
+		System.out.println("Downloading mod " + modInstallerId);
+		String urlString = Utils.BUNDLE.getString("mods." + modInstallerId + ".download");
+		String fileName = urlString.substring(urlString.lastIndexOf('/') + 1);
+		URL url = new URL(urlString);
+		Path path = modsDir.resolve(fileName);
+		downloadFileRetry(url, path);
+	}
+
+	public static void removeMods(Path modsFolder, String... modIds) throws IOException {
+		Set<String> modIdSet = new HashSet<>(Arrays.asList(modIds));
+		try (Stream<Path> stream = Files.list(modsFolder)) {
+			Path[] jars = stream.filter(path -> path.toString().endsWith(".jar")).toArray(Path[]::new);
+			for (Path path : jars) {
+				String foundModId = getModId(path);
+				if (foundModId == null || !modIdSet.contains(foundModId)) {
+					continue;
+				}
+				System.out.println("Deleting " + path);
+				Files.delete(path);
+			}
+		}
+	}
+
+	/**
+	 * Read the mod id from the {@code fabric.mod.json} inside the jar file. If the mod
+	 * id could not be read, {@code null} will be returned.
+	 *
+	 * @param jarFile The path to the mod jar file.
+	 * @return The mod id, or null.
+	 */
+	private static String getModId(Path jarFile) {
+		URI uri = URI.create("jar:" + jarFile.toUri());
+		try (FileSystem jar = FileSystems.newFileSystem(uri, new HashMap<>())) {
+			Path path = jar.getPath("fabric.mod.json");
+			try {
+				Json json = Json.read(Utils.readString(path));
+				return json.asJsonMap().get("id").asString();
+			} catch (Json.MalformedJsonException e) {
+				System.err.println("Failed to read mod-id from " + jarFile + ": " + e.getMessage());
+				return null;
+			}
+		} catch (IOException e) {
+			System.err.println("ERROR: Failed to read jar file '"+ jarFile +"'. Is it corrupted?");
+			return null;
 		}
 	}
 

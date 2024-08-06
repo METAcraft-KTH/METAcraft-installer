@@ -16,11 +16,7 @@
 
 package net.fabricmc.installer.client;
 
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.GridBagConstraints;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,12 +25,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JEditorPane;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 
 import net.fabricmc.installer.Handler;
@@ -48,7 +39,8 @@ import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 
 public class ClientHandler extends Handler {
-	private JCheckBox createProfile;
+	private JTextField profileInstallLocation;
+	private JButton selectProfileFolderButton;
 
 	@Override
 	public String name() {
@@ -66,7 +58,7 @@ public class ClientHandler extends Handler {
 	}
 
 	private void doInstall() {
-		String gameVersion = (String) gameVersionComboBox.getSelectedItem();
+		String gameVersion = Utils.BUNDLE.getString("installer.version.minecraft");
 		LoaderVersion loaderVersion = queryLoaderVersion();
 		if (loaderVersion == null) return;
 
@@ -84,7 +76,7 @@ public class ClientHandler extends Handler {
 				final ProfileInstaller profileInstaller = new ProfileInstaller(mcPath);
 				ProfileInstaller.LauncherType launcherType = null;
 
-				if (createProfile.isSelected()) {
+				if ("true".equals(Utils.BUNDLE.getString("create.profile"))) {
 					List<ProfileInstaller.LauncherType> types = profileInstaller.getInstalledLauncherTypes();
 
 					if (types.size() == 0) {
@@ -104,12 +96,13 @@ public class ClientHandler extends Handler {
 
 				String profileName = ClientInstaller.install(mcPath, gameVersion, loaderVersion, this);
 
-				if (createProfile.isSelected()) {
+				if ("true".equals(Utils.BUNDLE.getString("create.profile"))) {
 					if (launcherType == null) {
 						throw new RuntimeException(Utils.BUNDLE.getString("progress.exception.no.launcher.profile"));
 					}
 
-					profileInstaller.setupProfile(profileName, gameVersion, launcherType);
+					Path profilePath = Paths.get(profileInstallLocation.getText());
+					profileInstaller.setupProfile(profileName, gameVersion, launcherType, profilePath);
 				}
 
 				SwingUtilities.invokeLater(() -> showInstalledMessage(loaderVersion.name, gameVersion, mcPath.resolve("mods")));
@@ -219,7 +212,8 @@ public class ClientHandler extends Handler {
 			}
 		}
 
-		profileInstaller.setupProfile(profileName, gameVersion, launcherType);
+		// profileInstaller.setupProfile(profileName, gameVersion, launcherType);
+		throw new UnsupportedOperationException("Please use the GUI");
 	}
 
 	@Override
@@ -229,9 +223,14 @@ public class ClientHandler extends Handler {
 
 	@Override
 	public void setupPane2(JPanel pane, GridBagConstraints c, InstallerGui installerGui) {
-		addRow(pane, c, null,
-				createProfile = new JCheckBox(Utils.BUNDLE.getString("option.create.profile"), true));
+		addRow(pane, c, "prompt.select.location.profile",
+				profileInstallLocation = new JTextField(20),
+				selectProfileFolderButton = new JButton());
+		selectProfileFolderButton.setText("...");
+		selectProfileFolderButton.setPreferredSize(new Dimension(profileInstallLocation.getPreferredSize().height, profileInstallLocation.getPreferredSize().height));
+		selectProfileFolderButton.addActionListener(e -> InstallerGui.selectInstallLocation(() -> profileInstallLocation.getText(), s -> profileInstallLocation.setText(s)));
 
 		installLocation.setText(Utils.findDefaultInstallDir().toString());
+		profileInstallLocation.setText(Utils.findDefaultProfileInstallDir().toString());
 	}
 }

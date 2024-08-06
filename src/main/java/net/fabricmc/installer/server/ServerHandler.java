@@ -49,7 +49,7 @@ public class ServerHandler extends Handler {
 
 	@Override
 	public void install() {
-		String gameVersion = (String) gameVersionComboBox.getSelectedItem();
+		String gameVersion = Utils.BUNDLE.getString("installer.version.minecraft");
 		LoaderVersion loaderVersion = queryLoaderVersion();
 		if (loaderVersion == null) return;
 

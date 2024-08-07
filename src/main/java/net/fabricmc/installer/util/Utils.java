@@ -16,13 +16,10 @@
 
 package net.fabricmc.installer.util;
 
-import mjson.Json;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +32,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Base64;
@@ -47,6 +45,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import mjson.Json;
 
 public class Utils {
 	public static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
@@ -152,12 +152,14 @@ public class Utils {
 
 	public static void downloadFileRetry(URL url, Path path) throws IOException {
 		int i = 0;
+
 		while (true) {
 			try {
 				downloadFile(url, path);
 				return;
 			} catch (Throwable t) {
 				i++;
+
 				if (i > 3) {
 					throw t;
 				}
@@ -165,8 +167,9 @@ public class Utils {
 		}
 	}
 
-	public static void downloadMod(Path modsDir, String modInstallerId) throws IOException {
+	public static void downloadMod(Path modsDir, String modInstallerId, String modName, InstallerProgress progress) throws IOException {
 		System.out.println("Downloading mod " + modInstallerId);
+		progress.updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.download.mod.entry")).format(new Object[] {modName}));
 		String urlString = Utils.BUNDLE.getString("mods." + modInstallerId + ".download");
 		String fileName = urlString.substring(urlString.lastIndexOf('/') + 1);
 		URL url = new URL(urlString);
@@ -176,15 +179,21 @@ public class Utils {
 
 	public static void removeMods(Path modsFolder, String... modIds) throws IOException {
 		Set<String> modIdSet = new HashSet<>(Arrays.asList(modIds));
+
 		try (Stream<Path> stream = Files.list(modsFolder)) {
 			Path[] jars = stream.filter(path -> path.toString().endsWith(".jar")).toArray(Path[]::new);
+
 			for (Path path : jars) {
 				String foundModId = getModId(path);
-				if (foundModId == null || !modIdSet.contains(foundModId)) {
+
+				if (foundModId == null) {
 					continue;
 				}
-				System.out.println("Deleting " + path);
-				Files.delete(path);
+
+				if (modIdSet.contains(foundModId)) {
+					System.out.println("Deleting " + path);
+					Files.delete(path);
+				}
 			}
 		}
 	}
@@ -198,8 +207,10 @@ public class Utils {
 	 */
 	private static String getModId(Path jarFile) {
 		URI uri = URI.create("jar:" + jarFile.toUri());
+
 		try (FileSystem jar = FileSystems.newFileSystem(uri, new HashMap<>())) {
 			Path path = jar.getPath("fabric.mod.json");
+
 			try {
 				Json json = Json.read(Utils.readString(path));
 				return json.asJsonMap().get("id").asString();
@@ -208,7 +219,7 @@ public class Utils {
 				return null;
 			}
 		} catch (IOException e) {
-			System.err.println("ERROR: Failed to read jar file '"+ jarFile +"'. Is it corrupted?");
+			System.err.println("ERROR: Failed to read jar file '" + jarFile + "'. Is it corrupted?");
 			return null;
 		}
 	}

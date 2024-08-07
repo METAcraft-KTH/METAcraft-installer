@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import mjson.Json;
 
-import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 
 public class ProfileInstaller {
@@ -43,7 +42,7 @@ public class ProfileInstaller {
 				.collect(Collectors.toList());
 	}
 
-	public void setupProfile(String name, String gameVersion, LauncherType launcherType, Path profileGameDir) throws IOException {
+	public void setupProfile(String name, String profileName, String gameVersion, LauncherType launcherType, Path profileGameDir) throws IOException {
 		Path launcherProfiles = mcDir.resolve(launcherType.profileJsonName);
 
 		if (!Files.exists(launcherProfiles)) {
@@ -60,8 +59,6 @@ public class ProfileInstaller {
 			profiles = Json.object();
 			jsonObject.set("profiles", profiles);
 		}
-
-		String profileName = Reference.INSTALLER_NAME + "-" + gameVersion;
 
 		Json profile = profiles.at(profileName);
 
@@ -81,17 +78,6 @@ public class ProfileInstaller {
 		if (Files.notExists(modsDir)) {
 			Files.createDirectories(modsDir);
 		}
-
-		// Remove old mods if they exist
-		Utils.removeMods(
-				modsDir,
-				Utils.BUNDLE.getString("mods.simplevoicechat.modid"),
-				Utils.BUNDLE.getString("mods.sodium.modid")
-		);
-
-		// Download mods
-		Utils.downloadMod(modsDir, "simplevoicechat");
-		Utils.downloadMod(modsDir, "sodium");
 	}
 
 	private static Json createProfile(String name) {

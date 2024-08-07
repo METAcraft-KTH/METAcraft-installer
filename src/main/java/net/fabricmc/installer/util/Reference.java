@@ -17,6 +17,7 @@
 package net.fabricmc.installer.util;
 
 public class Reference {
+	public static final String LOADER_NAME = "fabric-loader";
 	public static final String INSTALLER_NAME = "metacraft";
 
 	public static final String FABRIC_API_URL = "https://www.curseforge.com/minecraft/mc-mods/fabric-api/";

@@ -16,8 +16,14 @@
 
 package net.fabricmc.installer.client;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Desktop;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,7 +31,13 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 
 import net.fabricmc.installer.Handler;
@@ -94,18 +106,48 @@ public class ClientHandler extends Handler {
 					}
 				}
 
-				String profileName = ClientInstaller.install(mcPath, gameVersion, loaderVersion, this);
+				String versionName = ClientInstaller.install(mcPath, gameVersion, loaderVersion, this);
+				String profileName = Reference.INSTALLER_NAME + "-" + gameVersion;
 
 				if ("true".equals(Utils.BUNDLE.getString("create.profile"))) {
 					if (launcherType == null) {
 						throw new RuntimeException(Utils.BUNDLE.getString("progress.exception.no.launcher.profile"));
 					}
 
-					Path profilePath = Paths.get(profileInstallLocation.getText());
-					profileInstaller.setupProfile(profileName, gameVersion, launcherType, profilePath);
+					Path profileGameDir = Paths.get(profileInstallLocation.getText());
+					profileInstaller.setupProfile(versionName, profileName, gameVersion, launcherType, profileGameDir);
+
+					Path modsDir = profileGameDir.resolve("mods");
+
+					// Remove old mods if they exist
+					Utils.removeMods(
+							modsDir,
+							Utils.BUNDLE.getString("mods.simplevoicechat.modid"),
+							Utils.BUNDLE.getString("mods.sodium.modid")
+					);
+
+					// Download mods
+					Utils.downloadMod(modsDir, "simplevoicechat", "Simple Voice Chat", this);
+					Utils.downloadMod(modsDir, "sodium", "Sodium", this);
+
+					Path serversPath = profileGameDir.resolve("servers.dat");
+
+					if (Files.notExists(serversPath)) {
+						System.out.println("Creating default servers.dat");
+
+						try (InputStream stream = ClassLoader.getSystemClassLoader().getResourceAsStream("servers.dat")) {
+							if (stream == null) {
+								throw new FileNotFoundException();
+							}
+
+							Files.copy(stream, serversPath);
+						}
+					}
 				}
 
-				SwingUtilities.invokeLater(() -> showInstalledMessage(loaderVersion.name, gameVersion, mcPath.resolve("mods")));
+				updateProgress(Utils.BUNDLE.getString("progress.done"));
+
+				SwingUtilities.invokeLater(() -> showInstalledMessage(loaderVersion.name, gameVersion, profileName, mcPath.resolve("mods")));
 			} catch (Exception e) {
 				error(e);
 			} finally {
@@ -114,8 +156,10 @@ public class ClientHandler extends Handler {
 		}).start();
 	}
 
-	private void showInstalledMessage(String loaderVersion, String gameVersion, Path modsDirectory) {
-		JEditorPane pane = new JEditorPane("text/html", "<html><body style=\"" + buildEditorPaneStyle() + "\">" + new MessageFormat(Utils.BUNDLE.getString("prompt.install.successful")).format(new Object[]{loaderVersion, gameVersion, Reference.FABRIC_API_URL}) + "</body></html>");
+	private void showInstalledMessage(String loaderVersion, String gameVersion, String profileName, Path modsDirectory) {
+		String content = new MessageFormat(Utils.BUNDLE.getString("prompt.install.successful")).format(new Object[]{loaderVersion, gameVersion, profileName});
+		JEditorPane pane = new JEditorPane("text/html", "<html><body style=\"" + buildEditorPaneStyle() + "\">" + content + "</body></html>");
+		pane.setMaximumSize(new Dimension(100, 500));
 		pane.setBackground(new Color(0, 0, 0, 0));
 		pane.setEditable(false);
 		pane.setCaret(new NoopCaret());

@@ -168,9 +168,16 @@ public class Utils {
 	}
 
 	public static void downloadMod(Path modsDir, String modInstallerId, String modName, InstallerProgress progress) throws IOException {
+		String urlString = Utils.BUNDLE.getString("mods." + modInstallerId + ".download");
+
+		if (urlString.trim().isEmpty() || "null".equals(urlString)) {
+			System.out.println("Skipping mod " + modInstallerId);
+			return;
+		}
+
 		System.out.println("Downloading mod " + modInstallerId);
 		progress.updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.download.mod.entry")).format(new Object[] {modName}));
-		String urlString = Utils.BUNDLE.getString("mods." + modInstallerId + ".download");
+
 		String fileName = urlString.substring(urlString.lastIndexOf('/') + 1);
 		URL url = new URL(urlString);
 		Path path = modsDir.resolve(fileName);

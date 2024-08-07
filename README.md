@@ -3,11 +3,9 @@ An Installer that installs Fabric and Simple Voice Chat that allows player to pl
 
 Fork of [FabricMC/fabric-installer](https://github.com/FabricMC/fabric-installer).
 
-## TODO
-- [x] Hardcode Minecraft version and Fabric version and don't allow the user to change it.
-- [x] Use .minecraft_metacraft instead of .minecraft by default
-- [x] Download and install Simple Voice Chat
-- [x] Add status text while downloading mods
-- [x] Fix line break on final text popup.
-- [ ] Close installer after pressing done.
-- [x] Install servers.dat with METAcraft (survival and event)
+## How to update / change Minecraft and mod versions
+Go to the file `installer.properties` and at the top, change the values for the Minecraft version and Fabric loader version.
+
+Also go to Modrinth and find the new versions of Simple Voice Chat and Sodium. Find the Download button for the version, right click and copy link. Use that link as the download link.
+
+To skip a mod (for example if Sodium hasn't updated yet) then just leave it empty.

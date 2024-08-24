@@ -125,10 +125,12 @@ public class ClientHandler extends Handler {
 
 					List<InstallerData.ModData> modsToInstall = new ArrayList<>();
 					Set<String> modIds = new HashSet<>();
+
 					for (InstallerData.ModData modData : Utils.INSTALLER_DATA.mods) {
 						if (!modData.enabled) {
 							continue;
 						}
+
 						if (this.checkBoxes.get(modData).isSelected()) {
 							modsToInstall.add(modData);
 							modIds.add(modData.modId);

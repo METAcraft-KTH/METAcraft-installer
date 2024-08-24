@@ -114,6 +114,7 @@ public abstract class Handler implements InstallerProgress {
 			if (!modData.enabled) {
 				continue;
 			}
+
 			JCheckBox box = new JCheckBox(modData.name, modData.installByDefault);
 			checkBoxes.put(modData, box);
 			JLabel description = new JLabel(modData.descriptionEnglish);

@@ -37,7 +37,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
@@ -67,6 +66,7 @@ public class Utils {
 			return super.newBundle(baseName, locale, format, loader, reload);
 		}
 	});
+	public static final InstallerData INSTALLER_DATA = InstallerData.load();
 
 	public static Path findDefaultInstallDir() {
 		Path dir;
@@ -167,16 +167,16 @@ public class Utils {
 		}
 	}
 
-	public static void downloadMod(Path modsDir, String modInstallerId, String modName, InstallerProgress progress) throws IOException {
-		String urlString = Utils.BUNDLE.getString("mods." + modInstallerId + ".download");
+	public static void downloadMod(Path modsDir, InstallerData.ModData modData, InstallerProgress progress) throws IOException {
+		String urlString = modData.download;
 
 		if (urlString.trim().isEmpty() || "null".equals(urlString)) {
-			System.out.println("Skipping mod " + modInstallerId);
+			System.out.println("Skipping mod " + modData.modId);
 			return;
 		}
 
-		System.out.println("Downloading mod " + modInstallerId);
-		progress.updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.download.mod.entry")).format(new Object[] {modName}));
+		System.out.println("Downloading mod " + modData.modId);
+		progress.updateProgress(new MessageFormat(Utils.BUNDLE.getString("progress.download.mod.entry")).format(new Object[] {modData.name}));
 
 		String fileName = urlString.substring(urlString.lastIndexOf('/') + 1);
 		URL url = new URL(urlString);
@@ -184,9 +184,7 @@ public class Utils {
 		downloadFileRetry(url, path);
 	}
 
-	public static void removeMods(Path modsFolder, String... modIds) throws IOException {
-		Set<String> modIdSet = new HashSet<>(Arrays.asList(modIds));
-
+	public static void removeMods(Path modsFolder, Set<String> modIds) throws IOException {
 		try (Stream<Path> stream = Files.list(modsFolder)) {
 			Path[] jars = stream.filter(path -> path.toString().endsWith(".jar")).toArray(Path[]::new);
 
@@ -197,7 +195,7 @@ public class Utils {
 					continue;
 				}
 
-				if (modIdSet.contains(foundModId)) {
+				if (modIds.contains(foundModId)) {
 					System.out.println("Deleting " + path);
 					Files.delete(path);
 				}

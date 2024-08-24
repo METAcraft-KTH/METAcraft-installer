@@ -80,7 +80,7 @@ public class ServerPostInstallDialog extends JDialog {
 	private ServerPostInstallDialog(ServerHandler handler) throws HeadlessException {
 		super(InstallerGui.instance, true);
 		this.serverHandler = handler;
-		this.minecraftVersion = Utils.BUNDLE.getString("installer.version.minecraft");
+		this.minecraftVersion = Utils.INSTALLER_DATA.minecraftVersion;
 		this.installDir = Paths.get(handler.installLocation.getText());
 		this.minecraftJar = installDir.resolve("server.jar");
 		this.minecraftJarTmp = installDir.resolve("server.jar.tmp");

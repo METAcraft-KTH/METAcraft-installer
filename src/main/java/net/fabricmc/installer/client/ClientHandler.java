@@ -28,8 +28,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -45,6 +48,7 @@ import net.fabricmc.installer.InstallerGui;
 import net.fabricmc.installer.LoaderVersion;
 import net.fabricmc.installer.launcher.MojangLauncherHelperWrapper;
 import net.fabricmc.installer.util.ArgumentParser;
+import net.fabricmc.installer.util.InstallerData;
 import net.fabricmc.installer.util.InstallerProgress;
 import net.fabricmc.installer.util.NoopCaret;
 import net.fabricmc.installer.util.Reference;
@@ -70,7 +74,7 @@ public class ClientHandler extends Handler {
 	}
 
 	private void doInstall() {
-		String gameVersion = Utils.BUNDLE.getString("installer.version.minecraft");
+		String gameVersion = Utils.INSTALLER_DATA.minecraftVersion;
 		LoaderVersion loaderVersion = queryLoaderVersion();
 		if (loaderVersion == null) return;
 
@@ -88,7 +92,7 @@ public class ClientHandler extends Handler {
 				final ProfileInstaller profileInstaller = new ProfileInstaller(mcPath);
 				ProfileInstaller.LauncherType launcherType = null;
 
-				if ("true".equals(Utils.BUNDLE.getString("create.profile"))) {
+				if (Utils.INSTALLER_DATA.createProfile) {
 					List<ProfileInstaller.LauncherType> types = profileInstaller.getInstalledLauncherTypes();
 
 					if (types.size() == 0) {
@@ -109,7 +113,7 @@ public class ClientHandler extends Handler {
 				String versionName = ClientInstaller.install(mcPath, gameVersion, loaderVersion, this);
 				String profileName = Reference.INSTALLER_NAME + "-" + gameVersion;
 
-				if ("true".equals(Utils.BUNDLE.getString("create.profile"))) {
+				if (Utils.INSTALLER_DATA.createProfile) {
 					if (launcherType == null) {
 						throw new RuntimeException(Utils.BUNDLE.getString("progress.exception.no.launcher.profile"));
 					}
@@ -119,16 +123,25 @@ public class ClientHandler extends Handler {
 
 					Path modsDir = profileGameDir.resolve("mods");
 
+					List<InstallerData.ModData> modsToInstall = new ArrayList<>();
+					Set<String> modIds = new HashSet<>();
+					for (InstallerData.ModData modData : Utils.INSTALLER_DATA.mods) {
+						if (!modData.enabled) {
+							continue;
+						}
+						if (this.checkBoxes.get(modData).isSelected()) {
+							modsToInstall.add(modData);
+							modIds.add(modData.modId);
+						}
+					}
+
 					// Remove old mods if they exist
-					Utils.removeMods(
-							modsDir,
-							Utils.BUNDLE.getString("mods.simplevoicechat.modid"),
-							Utils.BUNDLE.getString("mods.sodium.modid")
-					);
+					Utils.removeMods(modsDir, modIds);
 
 					// Download mods
-					Utils.downloadMod(modsDir, "simplevoicechat", "Simple Voice Chat", this);
-					Utils.downloadMod(modsDir, "sodium", "Sodium", this);
+					for (InstallerData.ModData modData : modsToInstall) {
+						Utils.downloadMod(modsDir, modData, this);
+					}
 
 					Path serversPath = profileGameDir.resolve("servers.dat");
 

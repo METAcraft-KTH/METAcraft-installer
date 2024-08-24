@@ -28,11 +28,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -44,6 +47,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import net.fabricmc.installer.util.ArgumentParser;
+import net.fabricmc.installer.util.InstallerData;
 import net.fabricmc.installer.util.InstallerProgress;
 import net.fabricmc.installer.util.Utils;
 
@@ -58,6 +62,8 @@ public abstract class Handler implements InstallerProgress {
 	public JTextField installLocation;
 	public JButton selectFolderButton;
 	public JLabel statusLabel;
+
+	public Map<InstallerData.ModData, JCheckBox> checkBoxes = new HashMap<>();
 
 	private JPanel pane;
 
@@ -84,9 +90,9 @@ public abstract class Handler implements InstallerProgress {
 
 		setupPane1(pane, c, installerGui);
 
-		addRow(pane, c, "prompt.game.version", new JLabel(Utils.BUNDLE.getString("installer.version.minecraft")));
+		addRow(pane, c, "prompt.game.version", new JLabel(Utils.INSTALLER_DATA.minecraftVersion));
 
-		addRow(pane, c, "prompt.loader.version", new JLabel(Utils.BUNDLE.getString("installer.version.fabricloader")));
+		addRow(pane, c, "prompt.loader.version", new JLabel(Utils.INSTALLER_DATA.fabricLoaderVersion));
 
 		addRow(pane, c, "prompt.select.location.launcher",
 				installLocation = new JTextField(20),
@@ -96,6 +102,25 @@ public abstract class Handler implements InstallerProgress {
 		selectFolderButton.addActionListener(e -> InstallerGui.selectInstallLocation(() -> installLocation.getText(), s -> installLocation.setText(s)));
 
 		setupPane2(pane, c, installerGui);
+
+		addRow(pane, c, null,
+				new JLabel(Utils.BUNDLE.getString("header.mods")));
+
+		JPanel modsContainer = new JPanel();
+		modsContainer.setLayout(new BoxLayout(modsContainer, BoxLayout.Y_AXIS));
+		addRow(pane, c, null, modsContainer);
+
+		for (InstallerData.ModData modData : Utils.INSTALLER_DATA.mods) {
+			if (!modData.enabled) {
+				continue;
+			}
+			JCheckBox box = new JCheckBox(modData.name, modData.installByDefault);
+			checkBoxes.put(modData, box);
+			JLabel description = new JLabel(modData.descriptionEnglish);
+			modsContainer.add(box);
+			modsContainer.add(description);
+			modsContainer.add(Box.createVerticalStrut(10));
+		}
 
 		addRow(pane, c, null,
 				statusLabel = new JLabel());
@@ -116,7 +141,7 @@ public abstract class Handler implements InstallerProgress {
 	}
 
 	protected LoaderVersion queryLoaderVersion() {
-		String ret = Utils.BUNDLE.getString("installer.version.fabricloader");
+		String ret = Utils.INSTALLER_DATA.fabricLoaderVersion;
 
 		if (!ret.equals(SELECT_CUSTOM_ITEM)) {
 			return new LoaderVersion(ret);

@@ -16,17 +16,30 @@
 
 package net.fabricmc.installer;
 
+import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
+import javax.swing.JOptionPane;
+import javax.swing.event.HyperlinkEvent;
 
 import net.fabricmc.installer.client.ClientHandler;
 import net.fabricmc.installer.util.ArgumentParser;
 import net.fabricmc.installer.util.CrashDialog;
 import net.fabricmc.installer.util.FabricService;
 import net.fabricmc.installer.util.MetaHandler;
+import net.fabricmc.installer.util.NoopCaret;
 import net.fabricmc.installer.util.OperatingSystem;
+import net.fabricmc.installer.util.Utils;
 
 public class Main {
 	public static MetaHandler GAME_VERSION_META;
@@ -41,6 +54,12 @@ public class Main {
 		}
 
 		System.out.println("Loading Fabric Installer: " + Main.class.getPackage().getImplementationVersion());
+
+		if (isMacOs()) {
+			if (showMacOsContinueAnyways()) {
+				return;
+			}
+		}
 
 		HANDLERS.add(new ClientHandler());
 
@@ -94,6 +113,39 @@ public class Main {
 			//Only reached if a handler is not found
 			System.out.println("No handler found for " + args[0] + " see help");
 		}
+	}
+
+	private static boolean isMacOs() {
+		String os = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+		return os.contains("mac") || os.contains("os x") || os.contains("osx") || os.contains("darwin");
+	}
+
+	private static boolean showMacOsContinueAnyways() {
+		JEditorPane body = new JEditorPane("text/html", Utils.BUNDLE.getString("prompt.macos.body"));
+		body.setBackground(new Color(0, 0, 0, 0));
+		body.setEditable(false);
+		body.setCaret(new NoopCaret());
+		body.addHyperlinkListener(e -> {
+			if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+				if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+					try {
+						Desktop.getDesktop().browse(e.getURL().toURI());
+					} catch (IOException | URISyntaxException ex) {
+						throw new RuntimeException(ex);
+					}
+				}
+			}
+		});
+		Image icon = Toolkit.getDefaultToolkit().getImage(ClassLoader.getSystemClassLoader().getResource("icon.png"));
+		int result = JOptionPane.showConfirmDialog(
+				null,
+				body,
+				Utils.BUNDLE.getString("prompt.macos.tile"),
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.QUESTION_MESSAGE,
+				new ImageIcon(icon.getScaledInstance(128, 128, Image.SCALE_DEFAULT))
+		);
+		return result != JOptionPane.YES_OPTION;
 	}
 
 	public static void loadMetadata() {

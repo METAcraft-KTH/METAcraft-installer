@@ -1,12 +1,12 @@
 {
-  "minecraft_version": "1.21.4",
-  "fabric_loader_version": "0.16.10",
+  "minecraft_version": "1.21.7",
+  "fabric_loader_version": "0.16.14",
   "create_profile": true,
   "mods": [
     {
       "modid": "voicechat",
       "name": "Simple Voice Chat",
-      "download": "https://cdn.modrinth.com/data/9eGKb6K1/versions/DWQCr1uB/voicechat-fabric-1.21.4-2.5.28.jar",
+      "download": "https://cdn.modrinth.com/data/9eGKb6K1/versions/YjxCZ3Wx/voicechat-fabric-1.21.7-2.5.34.jar",
       "enabled": true,
       "install_by_default": true,
       "description_en": "Adds Voice Chat to Minecraft. Especially recommended for events."
@@ -14,7 +14,7 @@
     {
       "modid": "sodium",
       "name": "Sodium",
-      "download": "https://cdn.modrinth.com/data/AANobbMI/versions/FRXt5xaI/sodium-fabric-0.6.10%2Bmc1.21.4.jar",
+      "download": "https://cdn.modrinth.com/data/AANobbMI/versions/ND4ROcMQ/sodium-fabric-0.6.13%2Bmc1.21.6.jar",
       "enabled": true,
       "install_by_default": false,
       "description_en": "Improves performance. It works similar to Optifine."
@@ -22,7 +22,7 @@
     {
       "modid": "iris",
       "name": "Iris Shaders",
-      "download": "https://cdn.modrinth.com/data/YL57xq9U/versions/Ca054sTe/iris-fabric-1.8.8%2Bmc1.21.4.jar",
+      "download": "https://cdn.modrinth.com/data/YL57xq9U/versions/l77DAK6U/iris-fabric-1.9.1%2Bmc1.21.7.jar",
       "enabled": true,
       "install_by_default": false,
       "description_en": "A modern shader pack loader for Minecraft intended to be compatible with existing OptiFine shader packs."
@@ -30,7 +30,7 @@
     {
       "modid": "fabric-api",
       "name": "Fabric API",
-      "download": "https://cdn.modrinth.com/data/P7dR8mSH/versions/bQZpGIz0/fabric-api-0.119.2%2B1.21.4.jar",
+      "download": "https://cdn.modrinth.com/data/P7dR8mSH/versions/JntuF9Ul/fabric-api-0.129.0%2B1.21.7.jar",
       "enabled": true,
       "install_by_default": false,
       "description_en": "Many other Fabric mods require Fabric API to work."
@@ -38,7 +38,7 @@
     {
       "modid": "nochatreports",
       "name": "No Chat Reports",
-      "download": "https://cdn.modrinth.com/data/qQyHxfxd/versions/9xt05630/NoChatReports-FABRIC-1.21.4-v2.11.0.jar",
+      "download": "https://cdn.modrinth.com/data/qQyHxfxd/versions/LhwpK0O6/NoChatReports-FABRIC-1.21.7-v2.14.0.jar",
       "enabled": true,
       "install_by_default": false,
       "description_en": "Disables chat reporting, fixes misleading error messages and turns off telemetry."
@@ -46,7 +46,7 @@
     {
       "modid": "modmenu",
       "name": "Mod Menu",
-      "download": "https://cdn.modrinth.com/data/mOgUt4GM/versions/7iGb2ltH/modmenu-13.0.3.jar",
+      "download": "https://cdn.modrinth.com/data/mOgUt4GM/versions/JY1tNj8H/modmenu-15.0.0-beta.3.jar",
       "enabled": true,
       "install_by_default": false,
       "description_en": "Adds a menu which shows what mods are installed."

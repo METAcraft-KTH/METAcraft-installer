@@ -1,12 +1,12 @@
 {
-  "minecraft_version": "1.21.7",
+  "minecraft_version": "1.21.8",
   "fabric_loader_version": "0.16.14",
   "create_profile": true,
   "mods": [
     {
       "modid": "voicechat",
       "name": "Simple Voice Chat",
-      "download": "https://cdn.modrinth.com/data/9eGKb6K1/versions/YjxCZ3Wx/voicechat-fabric-1.21.7-2.5.34.jar",
+      "download": "https://cdn.modrinth.com/data/9eGKb6K1/versions/iGd9Wjlq/voicechat-fabric-1.21.8-2.5.35.jar",
       "enabled": true,
       "install_by_default": true,
       "description_en": "Adds Voice Chat to Minecraft. Especially recommended for events."
@@ -30,7 +30,7 @@
     {
       "modid": "fabric-api",
       "name": "Fabric API",
-      "download": "https://cdn.modrinth.com/data/P7dR8mSH/versions/JntuF9Ul/fabric-api-0.129.0%2B1.21.7.jar",
+      "download": "https://cdn.modrinth.com/data/P7dR8mSH/versions/X2hTodix/fabric-api-0.129.0%2B1.21.8.jar",
       "enabled": true,
       "install_by_default": false,
       "description_en": "Many other Fabric mods require Fabric API to work."
